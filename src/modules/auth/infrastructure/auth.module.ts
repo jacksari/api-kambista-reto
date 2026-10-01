@@ -97,6 +97,6 @@ import { GetProfileUseCase } from '../application/use-cases/get-profile.use-case
         new GetProfileUseCase(userRepository),
     },
   ],
-  exports: [JwtAuthGuard],
+  exports: [JwtAuthGuard, JwtAccessTokenService],
 })
 export class AuthModule { }
