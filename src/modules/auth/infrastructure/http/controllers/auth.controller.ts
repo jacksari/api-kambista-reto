@@ -1,6 +1,5 @@
 import { Body, Controller, Get, HttpCode, HttpStatus, Post, UseGuards } from '@nestjs/common';
 import {
-  LoginUserResult,
   LoginUserUseCase,
 } from '../../../application/use-cases/login-user.use-case';
 import { RegisterUserUseCase } from '../../../application/use-cases/register-user.use-case';
@@ -11,6 +10,10 @@ import { GetProfileUseCase } from 'src/modules/auth/application/use-cases/get-pr
 import { JwtAuthGuard } from '../guards/jwt-auth.guard';
 import { AuthenticatedUser } from '../../tokens/jwt-access-token.service';
 import { CurrentUser } from '../decorators/current-user.decorator';
+import { LoginResponseDto, toLoginResponse } from '../dto/login-response.dto';
+import { ProfileResponseDto, toProfileResponse } from '../dto/profile-response.dto';
+import { RegisterUserModel } from 'src/modules/auth/application/models/register.model';
+import { RegisterResponseDto, toRegisterResponse } from '../dto/register-response.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -21,23 +24,26 @@ export class AuthController {
   ) { }
 
   @Post('register')
-  register(@Body() request: RegisterRequestDto): Promise<AuthUser> {
-    return this.registerUser.execute(request);
+  async register(@Body() request: RegisterRequestDto): Promise<RegisterResponseDto> {
+    const result = await this.registerUser.execute(request);
+    return toRegisterResponse(result);
   }
 
   @Post('login')
   @HttpCode(HttpStatus.OK)
-  login(@Body() request: LoginRequestDto): Promise<LoginUserResult> {
-    return this.loginUser.execute(request);
+  async login(@Body() request: LoginRequestDto): Promise<LoginResponseDto> {
+    const userLogin = await this.loginUser.execute(request);
+    return toLoginResponse(userLogin);
   }
 
   @Get('profile')
   @UseGuards(JwtAuthGuard)
-  profile(
+  async profile(
     @CurrentUser() authenticatedUser: AuthenticatedUser,
-  ): Promise<AuthUser> {
-    return this.getProfile.execute({
+  ): Promise<ProfileResponseDto> {
+    const profile = await this.getProfile.execute({
       userId: authenticatedUser.id,
     });
+    return toProfileResponse(profile);
   }
 }

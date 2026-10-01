@@ -1,0 +1,1 @@
+export { TransactionsModule } from './infrastructure/transactions.module';

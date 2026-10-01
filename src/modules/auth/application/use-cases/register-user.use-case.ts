@@ -6,6 +6,8 @@ import { UserAlreadyExistsError } from '../errors/user-already-exists.error';
 import { AuthUser, toAuthUser } from '../models/auth-user.model';
 import { PasswordHasher } from '../ports/password-hasher';
 import { UserRepository } from '../ports/user.repository';
+import { RegisterUserModel } from '../models/register.model';
+import { AccessTokenService } from '../ports/access-token.service';
 
 export interface RegisterUserCommand {
   email: string;
@@ -18,9 +20,10 @@ export class RegisterUserUseCase {
     private readonly userRepository: UserRepository,
     private readonly passwordHasher: PasswordHasher,
     private readonly idGenerator: IdGenerator,
+    private readonly accessTokenService: AccessTokenService,
   ) { }
 
-  async execute(command: RegisterUserCommand): Promise<AuthUser> {
+  async execute(command: RegisterUserCommand): Promise<RegisterUserModel> {
     const email = Email.create(command.email);
     const name = command.name.trim();
     const password = Password.create(command.password);
@@ -40,6 +43,9 @@ export class RegisterUserUseCase {
 
     await this.userRepository.save(user);
 
-    return toAuthUser(user);
+    return {
+      accessToken: await this.accessTokenService.issue(user),
+      user: toAuthUser(user),
+    };
   }
 }

@@ -6,6 +6,7 @@ import { ExchangeRatesModule } from './modules/exchange-rates/exchange-rates.mod
 import { validateEnvironment } from './modules/shared/infrastructure/config/environment.config';
 import { DatabaseModule } from './modules/shared/infrastructure/database/database.module';
 import { GlobalExceptionFilter } from './modules/shared/infrastructure/http/filters/global-exception.filter';
+import { TransactionsModule } from './modules/transactions/transactions.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { GlobalExceptionFilter } from './modules/shared/infrastructure/http/filt
     DatabaseModule,
     AuthModule,
     ExchangeRatesModule,
+    TransactionsModule,
   ],
   providers: [
     {
@@ -24,4 +26,4 @@ import { GlobalExceptionFilter } from './modules/shared/infrastructure/http/filt
     },
   ],
 })
-export class AppModule {}
+export class AppModule { }

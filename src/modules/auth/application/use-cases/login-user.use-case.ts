@@ -1,6 +1,7 @@
 import { Email } from '../../domain/value-objects/email.value-object';
 import { InvalidCredentialsError } from '../errors/invalid-credentials.error';
 import { AuthUser, toAuthUser } from '../models/auth-user.model';
+import { LoginUserModel } from '../models/login.model';
 import { AccessTokenService } from '../ports/access-token.service';
 import { PasswordHasher } from '../ports/password-hasher';
 import { UserRepository } from '../ports/user.repository';
@@ -10,19 +11,14 @@ export interface LoginUserCommand {
   password: string;
 }
 
-export interface LoginUserResult {
-  accessToken: string;
-  user: AuthUser;
-}
-
 export class LoginUserUseCase {
   constructor(
     private readonly userRepository: UserRepository,
     private readonly passwordHasher: PasswordHasher,
     private readonly accessTokenService: AccessTokenService,
-  ) {}
+  ) { }
 
-  async execute(command: LoginUserCommand): Promise<LoginUserResult> {
+  async execute(command: LoginUserCommand): Promise<LoginUserModel> {
     const email = Email.create(command.email);
     const user = await this.userRepository.findByEmail(email);
 

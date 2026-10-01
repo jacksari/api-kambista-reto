@@ -6,21 +6,24 @@ import { User } from '../../domain/entities/user.entity';
 export interface AuthenticatedUser {
   id: string;
   email: string;
+  role: string;
 }
 
 interface AccessTokenPayload {
   sub: string;
   email: string;
+  role: string;
 }
 
 @Injectable()
 export class JwtAccessTokenService implements AccessTokenService {
-  constructor(private readonly jwtService: JwtService) {}
+  constructor(private readonly jwtService: JwtService) { }
 
   issue(user: User): Promise<string> {
     return this.jwtService.signAsync({
       sub: user.id,
       email: user.email.value,
+      role: user.role,
     } satisfies AccessTokenPayload);
   }
 
@@ -31,6 +34,7 @@ export class JwtAccessTokenService implements AccessTokenService {
     return {
       id: payload.sub,
       email: payload.email,
+      role: payload.role,
     };
   }
 }

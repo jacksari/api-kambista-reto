@@ -65,12 +65,14 @@ import { GetProfileUseCase } from '../application/use-cases/get-profile.use-case
         AUTH_TOKENS.userRepository,
         AUTH_TOKENS.passwordHasher,
         AUTH_TOKENS.idGenerator,
+        AUTH_TOKENS.accessTokenService,
       ],
       useFactory: (
         userRepository: UserRepository,
         passwordHasher: PasswordHasher,
         idGenerator: IdGenerator,
-      ) => new RegisterUserUseCase(userRepository, passwordHasher, idGenerator),
+        accessTokenService: AccessTokenService,
+      ) => new RegisterUserUseCase(userRepository, passwordHasher, idGenerator, accessTokenService),
     },
     {
       provide: LoginUserUseCase,
