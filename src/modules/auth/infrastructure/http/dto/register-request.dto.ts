@@ -5,7 +5,7 @@ export class RegisterRequestDto {
   @IsString()
   @MinLength(1)
   @MaxLength(100)
-  name!: string;
+  nombre!: string;
 
   @IsEmail()
   email!: string;

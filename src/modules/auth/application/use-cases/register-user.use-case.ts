@@ -11,7 +11,7 @@ import { AccessTokenService } from '../ports/access-token.service';
 
 export interface RegisterUserCommand {
   email: string;
-  name: string;
+  nombre: string;
   password: string;
 }
 
@@ -25,7 +25,7 @@ export class RegisterUserUseCase {
 
   async execute(command: RegisterUserCommand): Promise<RegisterUserModel> {
     const email = Email.create(command.email);
-    const name = command.name.trim();
+    const name = command.nombre.trim();
     const password = Password.create(command.password);
     const existingUser = await this.userRepository.findByEmail(email);
 
