@@ -1,10 +1,11 @@
 import { Email } from '../../domain/value-objects/email.value-object';
 import { InvalidCredentialsError } from '../errors/invalid-credentials.error';
-import { AuthUser, toAuthUser } from '../models/auth-user.model';
+import { toAuthUser } from '../models/auth-user.model';
 import { LoginUserModel } from '../models/login.model';
 import { AccessTokenService } from '../ports/access-token.service';
 import { PasswordHasher } from '../ports/password-hasher';
 import { UserRepository } from '../ports/user.repository';
+import { AppLogger } from '../../../shared/application/ports/app-logger';
 
 export interface LoginUserCommand {
   email: string;
@@ -16,7 +17,8 @@ export class LoginUserUseCase {
     private readonly userRepository: UserRepository,
     private readonly passwordHasher: PasswordHasher,
     private readonly accessTokenService: AccessTokenService,
-  ) { }
+    private readonly logger: AppLogger,
+  ) {}
 
   async execute(command: LoginUserCommand): Promise<LoginUserModel> {
     const email = Email.create(command.email);
@@ -35,8 +37,15 @@ export class LoginUserUseCase {
       throw new InvalidCredentialsError();
     }
 
+    const accessToken = await this.accessTokenService.issue(user);
+
+    this.logger.log('user_authenticated', {
+      userId: user.id,
+      role: user.role,
+    });
+
     return {
-      accessToken: await this.accessTokenService.issue(user),
+      accessToken,
       user: toAuthUser(user),
     };
   }

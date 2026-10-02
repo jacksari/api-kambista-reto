@@ -25,6 +25,8 @@ import { RolesGuard } from './http/guards/roles.guard';
 import { ListUsersUseCase } from '../application/use-cases/list-users.use-case';
 import { UserSummaryReader } from '../application/ports/user-summary.reader';
 import { UsersController } from './http/controllers/users.controller';
+import { AppLogger } from '../../shared/application/ports/app-logger';
+import { NestAppLogger } from '../../shared/infrastructure/logging/nest-app-logger.service';
 
 @Module({
   imports: [
@@ -77,13 +79,22 @@ import { UsersController } from './http/controllers/users.controller';
         AUTH_TOKENS.passwordHasher,
         AUTH_TOKENS.idGenerator,
         AUTH_TOKENS.accessTokenService,
+        NestAppLogger,
       ],
       useFactory: (
         userRepository: UserRepository,
         passwordHasher: PasswordHasher,
         idGenerator: IdGenerator,
         accessTokenService: AccessTokenService,
-      ) => new RegisterUserUseCase(userRepository, passwordHasher, idGenerator, accessTokenService),
+        logger: AppLogger,
+      ) =>
+        new RegisterUserUseCase(
+          userRepository,
+          passwordHasher,
+          idGenerator,
+          accessTokenService,
+          logger,
+        ),
     },
     {
       provide: LoginUserUseCase,
@@ -91,16 +102,19 @@ import { UsersController } from './http/controllers/users.controller';
         AUTH_TOKENS.userRepository,
         AUTH_TOKENS.passwordHasher,
         AUTH_TOKENS.accessTokenService,
+        NestAppLogger,
       ],
       useFactory: (
         userRepository: UserRepository,
         passwordHasher: PasswordHasher,
         accessTokenService: AccessTokenService,
+        logger: AppLogger,
       ) =>
         new LoginUserUseCase(
           userRepository,
           passwordHasher,
           accessTokenService,
+          logger,
         ),
     },
     {
@@ -112,12 +126,10 @@ import { UsersController } from './http/controllers/users.controller';
     {
       provide: ListUsersUseCase,
       inject: [AUTH_TOKENS.userSummaryReader],
-      useFactory: (
-        userSummaryReader: UserSummaryReader,
-      ) =>
+      useFactory: (userSummaryReader: UserSummaryReader) =>
         new ListUsersUseCase(userSummaryReader),
     },
   ],
   exports: [JwtAuthGuard, JwtAccessTokenService, RolesGuard],
 })
-export class AuthModule { }
+export class AuthModule {}

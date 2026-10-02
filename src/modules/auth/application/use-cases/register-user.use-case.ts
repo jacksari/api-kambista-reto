@@ -3,11 +3,12 @@ import { Email } from '../../domain/value-objects/email.value-object';
 import { Password } from '../../domain/value-objects/password.value-object';
 import { IdGenerator } from '../../../shared/application/ports/id-generator';
 import { UserAlreadyExistsError } from '../errors/user-already-exists.error';
-import { AuthUser, toAuthUser } from '../models/auth-user.model';
+import { toAuthUser } from '../models/auth-user.model';
 import { PasswordHasher } from '../ports/password-hasher';
 import { UserRepository } from '../ports/user.repository';
 import { RegisterUserModel } from '../models/register.model';
 import { AccessTokenService } from '../ports/access-token.service';
+import { AppLogger } from '../../../shared/application/ports/app-logger';
 
 export interface RegisterUserCommand {
   email: string;
@@ -21,7 +22,8 @@ export class RegisterUserUseCase {
     private readonly passwordHasher: PasswordHasher,
     private readonly idGenerator: IdGenerator,
     private readonly accessTokenService: AccessTokenService,
-  ) { }
+    private readonly logger: AppLogger,
+  ) {}
 
   async execute(command: RegisterUserCommand): Promise<RegisterUserModel> {
     const email = Email.create(command.email);
@@ -42,9 +44,15 @@ export class RegisterUserUseCase {
     });
 
     await this.userRepository.save(user);
+    const accessToken = await this.accessTokenService.issue(user);
+
+    this.logger.log('user_registered', {
+      userId: user.id,
+      role: user.role,
+    });
 
     return {
-      accessToken: await this.accessTokenService.issue(user),
+      accessToken,
       user: toAuthUser(user),
     };
   }

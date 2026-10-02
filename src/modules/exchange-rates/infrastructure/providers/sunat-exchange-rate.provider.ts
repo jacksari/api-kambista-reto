@@ -56,9 +56,9 @@ export class SunatExchangeRateProvider implements ExchangeRateProvider {
         signal: AbortSignal.timeout(REQUEST_TIMEOUT_MILLISECONDS),
       });
 
-      console.log('SunatExchangeRateProvider response:', response);
+      // console.log('SunatExchangeRateProvider response:', response);
       console.log('SunatExchangeRateProvider response status:', response.status);
-      console.log('SunatExchangeRateProvider response headers:', response.headers);
+      // console.log('SunatExchangeRateProvider response headers:', response.headers);
 
       if (!response.ok) {
         throw new ExchangeRateProviderUnavailableError();

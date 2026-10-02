@@ -1,4 +1,5 @@
 import { IdGenerator } from '../../../shared/application/ports/id-generator';
+import { AppLogger } from '../../../shared/application/ports/app-logger';
 import { ExchangeRate } from '../../domain/entities/exchange-rate.entity';
 import {
   ExchangeRateModel,
@@ -14,7 +15,8 @@ export class RefreshExchangeRateUseCase {
     private readonly repository: ExchangeRateRepository,
     private readonly idGenerator: IdGenerator,
     private readonly cache: ExchangeRateCache,
-  ) { }
+    private readonly logger: AppLogger,
+  ) {}
 
   async execute(): Promise<ExchangeRateModel> {
     const quote = await this.provider.getCurrent();
@@ -29,6 +31,13 @@ export class RefreshExchangeRateUseCase {
 
     await this.repository.save(exchangeRate);
     await this.cache.set(exchangeRate);
+
+    this.logger.log('exchange_rate_refreshed', {
+      exchangeRateId: exchangeRate.id,
+      source: exchangeRate.source,
+      purchaseRate: exchangeRate.purchaseRate,
+      saleRate: exchangeRate.saleRate,
+    });
 
     return toExchangeRateModel(exchangeRate);
   }

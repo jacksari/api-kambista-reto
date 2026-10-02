@@ -19,6 +19,8 @@ import { SunatExchangeRateProvider } from './providers/sunat-exchange-rate.provi
 import { ExchangeRateScheduler } from './scheduling/exchange-rate.scheduler';
 import { InMemoryExchangeRateCache } from './cache/in-memory-exchange-rate-cache.service';
 import { ExchangeRateCache } from '../application/ports/exchange-rate-cache';
+import { AppLogger } from '../../shared/application/ports/app-logger';
+import { NestAppLogger } from '../../shared/infrastructure/logging/nest-app-logger.service';
 
 @Module({
   imports: [
@@ -61,19 +63,32 @@ import { ExchangeRateCache } from '../application/ports/exchange-rate-cache';
         EXCHANGE_RATE_TOKENS.repository,
         EXCHANGE_RATE_TOKENS.idGenerator,
         EXCHANGE_RATE_TOKENS.cache,
+        NestAppLogger,
       ],
       useFactory: (
         provider: ExchangeRateProvider,
         repository: ExchangeRateRepository,
         idGenerator: IdGenerator,
         cache: ExchangeRateCache,
-      ) => new RefreshExchangeRateUseCase(provider, repository, idGenerator, cache),
+        logger: AppLogger,
+      ) =>
+        new RefreshExchangeRateUseCase(
+          provider,
+          repository,
+          idGenerator,
+          cache,
+          logger,
+        ),
     },
     {
       provide: GetCurrentExchangeRateUseCase,
-      inject: [EXCHANGE_RATE_TOKENS.repository, EXCHANGE_RATE_TOKENS.cache],
-      useFactory: (repository: ExchangeRateRepository, cache: ExchangeRateCache) =>
-        new GetCurrentExchangeRateUseCase(repository, cache),
+      inject: [
+        EXCHANGE_RATE_TOKENS.repository, EXCHANGE_RATE_TOKENS.cache, NestAppLogger],
+      useFactory: (
+        repository: ExchangeRateRepository,
+        cache: ExchangeRateCache,
+        logger: AppLogger,
+      ) => new GetCurrentExchangeRateUseCase(repository, cache, logger),
     },
   ],
   exports: [GetCurrentExchangeRateUseCase],
