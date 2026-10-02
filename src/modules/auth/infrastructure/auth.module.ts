@@ -20,6 +20,11 @@ import {
 } from './persistence/mongoose/schemas/user.schema';
 import { JwtAccessTokenService } from './tokens/jwt-access-token.service';
 import { GetProfileUseCase } from '../application/use-cases/get-profile.use-case';
+import { MongooseUserSummaryReader } from './persistence/mongoose/readers/mongoose-user-summary.reader';
+import { RolesGuard } from './http/guards/roles.guard';
+import { ListUsersUseCase } from '../application/use-cases/list-users.use-case';
+import { UserSummaryReader } from '../application/ports/user-summary.reader';
+import { UsersController } from './http/controllers/users.controller';
 
 @Module({
   imports: [
@@ -36,13 +41,15 @@ import { GetProfileUseCase } from '../application/use-cases/get-profile.use-case
       }),
     }),
   ],
-  controllers: [AuthController],
+  controllers: [AuthController, UsersController],
   providers: [
     BcryptPasswordHasher,
     JwtAccessTokenService,
     JwtAuthGuard,
+    RolesGuard,
     MongooseUserRepository,
     UuidGenerator,
+    MongooseUserSummaryReader,
     {
       provide: AUTH_TOKENS.userRepository,
       useExisting: MongooseUserRepository,
@@ -58,6 +65,10 @@ import { GetProfileUseCase } from '../application/use-cases/get-profile.use-case
     {
       provide: AUTH_TOKENS.idGenerator,
       useExisting: UuidGenerator,
+    },
+    {
+      provide: AUTH_TOKENS.userSummaryReader,
+      useExisting: MongooseUserSummaryReader,
     },
     {
       provide: RegisterUserUseCase,
@@ -98,7 +109,15 @@ import { GetProfileUseCase } from '../application/use-cases/get-profile.use-case
       useFactory: (userRepository: UserRepository) =>
         new GetProfileUseCase(userRepository),
     },
+    {
+      provide: ListUsersUseCase,
+      inject: [AUTH_TOKENS.userSummaryReader],
+      useFactory: (
+        userSummaryReader: UserSummaryReader,
+      ) =>
+        new ListUsersUseCase(userSummaryReader),
+    },
   ],
-  exports: [JwtAuthGuard, JwtAccessTokenService],
+  exports: [JwtAuthGuard, JwtAccessTokenService, RolesGuard],
 })
 export class AuthModule { }
