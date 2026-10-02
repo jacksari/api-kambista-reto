@@ -16,6 +16,7 @@ import {
   ApiOkResponse,
   ApiOperation,
   ApiTags,
+  ApiTooManyRequestsResponse,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { LoginUserUseCase } from '../../../application/use-cases/login-user.use-case';
@@ -35,6 +36,7 @@ import {
   RegisterResponseDto,
   toRegisterResponse,
 } from '../dto/register-response.dto';
+import { AuthRateLimit } from '../decorators/auth-rate-limit.decorator';
 
 @ApiTags('Authentication')
 @Controller('auth')
@@ -65,6 +67,7 @@ export class AuthController {
   }
 
   @Post('login')
+  @AuthRateLimit()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Authenticate a user' })
   @ApiOkResponse({
@@ -76,6 +79,9 @@ export class AuthController {
   })
   @ApiUnauthorizedResponse({
     description: 'Email or password is incorrect',
+  })
+  @ApiTooManyRequestsResponse({
+    description: 'Too many login attempts; try again in five minutes',
   })
   async login(@Body() request: LoginRequestDto): Promise<LoginResponseDto> {
     const userLogin = await this.loginUser.execute(request);

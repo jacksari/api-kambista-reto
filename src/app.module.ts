@@ -1,6 +1,7 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { APP_FILTER } from '@nestjs/core';
+import { APP_FILTER, APP_GUARD } from '@nestjs/core';
+import { minutes, ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { AuthModule } from './modules/auth/auth.module';
 import { ExchangeRatesModule } from './modules/exchange-rates/exchange-rates.module';
 import { validateEnvironment } from './modules/shared/infrastructure/config/environment.config';
@@ -16,6 +17,12 @@ import { TransactionsModule } from './modules/transactions/transactions.module';
       isGlobal: true,
       validate: validateEnvironment,
     }),
+    ThrottlerModule.forRoot([
+      {
+        ttl: minutes(1),
+        limit: 100,
+      },
+    ]),
     DatabaseModule,
     LoggingModule,
     AuthModule,
@@ -23,6 +30,10 @@ import { TransactionsModule } from './modules/transactions/transactions.module';
     TransactionsModule,
   ],
   providers: [
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
     {
       provide: APP_FILTER,
       useClass: GlobalExceptionFilter,
