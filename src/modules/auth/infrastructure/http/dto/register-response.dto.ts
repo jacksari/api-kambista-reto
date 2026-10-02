@@ -1,26 +1,28 @@
-import { LoginUserModel } from "src/modules/auth/application/models/login.model";
-import { RegisterUserModel } from "src/modules/auth/application/models/register.model";
+import { ApiProperty } from '@nestjs/swagger';
+import { RegisterUserModel } from 'src/modules/auth/application/models/register.model';
+import { LoginResponseUserDto } from './login-response.dto';
 
-export interface RegisterResponseDto {
-    access_token: string;
-    usuario: {
-        id: string;
-        nombre: string;
-        email: string;
-        rol: string;
-    }
+export class RegisterResponseDto {
+  @ApiProperty({
+    description: 'JWT used to access protected endpoints',
+    example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+  })
+  access_token!: string;
+
+  @ApiProperty({ type: LoginResponseUserDto })
+  usuario!: LoginResponseUserDto;
 }
 
 export function toRegisterResponse(
-    userRegister: RegisterUserModel,
+  userRegister: RegisterUserModel,
 ): RegisterResponseDto {
-    return {
-        access_token: userRegister.accessToken,
-        usuario: {
-            id: userRegister.user.id,
-            nombre: userRegister.user.name,
-            email: userRegister.user.email,
-            rol: userRegister.user.role
-        }
-    };
+  return {
+    access_token: userRegister.accessToken,
+    usuario: {
+      id: userRegister.user.id,
+      nombre: userRegister.user.name,
+      email: userRegister.user.email,
+      rol: userRegister.user.role,
+    },
+  };
 }

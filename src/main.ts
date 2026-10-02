@@ -1,6 +1,7 @@
 import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 
 async function bootstrap(): Promise<void> {
@@ -26,6 +27,29 @@ async function bootstrap(): Promise<void> {
       whitelist: true,
     }),
   );
+
+  const swaggerConfig = new DocumentBuilder()
+    .setTitle('Kambista API')
+    .setDescription('API for authentication, exchange rates, and transactions')
+    .setVersion('1.0')
+    .addBearerAuth(
+      {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+      },
+      'access-token',
+    )
+    .build();
+
+  const swaggerDocument = SwaggerModule.createDocument(app, swaggerConfig);
+
+  SwaggerModule.setup('docs', app, swaggerDocument, {
+    useGlobalPrefix: true,
+    swaggerOptions: {
+      persistAuthorization: true,
+    },
+  });
 
   await app.listen(config.getOrThrow<number>('PORT'));
 }

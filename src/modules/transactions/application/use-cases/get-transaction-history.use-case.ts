@@ -22,32 +22,35 @@ export class GetTransactionHistoryUseCase {
     async execute(
         query: GetTransactionHistoryQuery,
     ): Promise<TransactionHistoryModel> {
-        if (query.startDate > query.endDate) {
+
+        const { authenticatedUserId, isAdmin, requestedUserId, startDate, endDate, page, perPage } = query;
+
+        if (startDate > endDate) {
             throw new InvalidDateRangeError();
         }
 
-        if (query.requestedUserId && !query.isAdmin) {
+        if (requestedUserId && !isAdmin) {
             throw new TransactionHistoryForbiddenError();
         }
 
         const targetUserId =
-            query.requestedUserId ?? query.authenticatedUserId;
+            requestedUserId ?? authenticatedUserId;
 
         const result = await this.repository.findHistory({
             userId: targetUserId,
-            startDate: query.startDate,
-            endDate: query.endDate,
-            page: query.page,
-            perPage: query.perPage,
+            startDate: startDate,
+            endDate: endDate,
+            page: page,
+            perPage: perPage,
         });
 
         return {
             data: result.transactions.map(toTransactionModel),
             pagination: {
-                page: query.page,
-                perPage: query.perPage,
+                page: page,
+                perPage: perPage,
                 total: result.total,
-                totalPages: Math.ceil(result.total / query.perPage),
+                totalPages: Math.ceil(result.total / perPage),
             },
         };
     }

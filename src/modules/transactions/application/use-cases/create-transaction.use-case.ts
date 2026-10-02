@@ -28,23 +28,26 @@ export class CreateTransactionUseCase {
     async execute(
         command: CreateTransactionCommand,
     ): Promise<TransactionModel> {
+
+        const { userId, sourceCurrency, targetCurrency, amount } = command;
+
         const currentRate =
             await this.exchangeRateReader.getCurrent();
 
         const source = Money.create(
-            command.amount,
-            command.sourceCurrency,
+            amount,
+            sourceCurrency,
         );
 
         const conversion = this.exchangeService.calculate(
             source,
-            command.targetCurrency,
+            targetCurrency,
             currentRate,
         );
 
         const transaction = Transaction.create({
             id: this.idGenerator.generate(),
-            userId: command.userId,
+            userId: userId,
             source,
             target: conversion.target,
             appliedRate: conversion.appliedRate,
