@@ -3,21 +3,19 @@ import { UserNotFoundError } from '../errors/user-not-found.error';
 import { UserRepository } from '../ports/user.repository';
 
 export interface GetProfileQuery {
-    userId: string;
+  userId: string;
 }
 
 export class GetProfileUseCase {
-    constructor(private readonly userRepository: UserRepository) {
-        console.log('GetProfileUseCase initialized with userRepository:', userRepository);
-     }
+  constructor(private readonly userRepository: UserRepository) {}
 
-    async execute(query: GetProfileQuery): Promise<AuthUser> {
-        const user = await this.userRepository.findById(query.userId);
+  async execute(query: GetProfileQuery): Promise<AuthUser> {
+    const user = await this.userRepository.findById(query.userId);
 
-        if (!user) {
-            throw new UserNotFoundError();
-        }
-
-        return toAuthUser(user);
+    if (!user) {
+      throw new UserNotFoundError();
     }
+
+    return toAuthUser(user);
+  }
 }
